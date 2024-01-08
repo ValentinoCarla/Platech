@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chatbot</title>
+    <style>
+        body {
+            background-color: #121212;
+            /* Night mode background color */
+            color: #ffffff;
+            /* Text color */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 80%;
+            max-width: 400px;
+            background-color: #1e1e1e;
+            /* Chat container background color */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .user-message {
+            background-color: #0084ff;
+            /* User message background color */
+            color: #ffffff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            align-self: flex-end;
+        }
+
+        .bot-message {
+            background-color: #00ff84;
+            /* Bot message background color */
+            color: #000000;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            max-width: 70%;
+        }
+
+        .input-container {
+            display: flex;
+            width: 80%;
+            /* Set the width to 80% of the screen */
+            max-width: 400px;
+            /* Limit the maximum width */
+            margin-top: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            outline: none;
+        }
+
+        #sendButton,
+        .subnet-button {
+            background-color: #4caf50;
+            /* Button color */
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .subnet-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="chat-container">
+        <div class="bot-message">Hello! How can I help you today?</div>
+        <!-- Add more messages here as needed -->
+    </div>
+
+    <!-- Add a container for dynamically created buttons -->
+    <div id="dynamicButtonsContainer" class="subnet-buttons"></div>
+
+    <form id="chatForm" class="input-container" onsubmit="sendMessage(); return false;">
+        <input type="text" id="userInput" placeholder="Type your message...">
+        <button type="submit" id="sendButton">Send</button>
+    </form>
+
+    <!-- Add this script to your existing HTML file -->
+    <!-- Update WebSocket connection to use secure (WSS) -->
+    <!-- Your existing HTML code here -->
+<!-- Your existing HTML code here -->
+<!-- Your existing HTML code here -->
+
+<script>
+    // WebSocket connection
+    const socketProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const socket = new WebSocket(`${socketProtocol}://${window.location.host}/ws`);
+
+    // Function to send messages
+    function sendMessage() {
+        var userInput = document.getElementById('userInput').value;
+        if (userInput.trim() !== '' && socket.readyState === WebSocket.OPEN) {
+            // Send user input to the server
+            socket.send(userInput);
+            document.getElementById('userInput').value = ''; // Clear the input field
+        }
+    }
+
+    // Handle messages from the server
+    socket.onmessage = function (event) {
+        var chatContainer = document.querySelector('.chat-container');
+        var botResponse = '<div class="bot-message">' + event.data + '</div>';
+        chatContainer.innerHTML += botResponse;
+
+        // Scroll to the bottom of the chat container
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Check if the message is about creating dynamic buttons
+        if (event.data === "Great! Click 'Fixed Length Subnet' or 'What is FLSM?' to proceed.") {
+            // Call the function to create buttons dynamically
+            createDynamicButton('Fixed Length Subnet', 'flsm'); // Assign 'flsm' to Fixed Length button
+            createDynamicButton('What is FLSM', 'vlsm'); // Assign 'vlsm' to Variable Length button
+        }
+
+        // Check if the message is about trying again and create dynamic buttons
+        if (event.data === 'Do you want to try again?') {
+            createDynamicButton('Yes', 'yes');
+            createDynamicButton('No', 'no');
+        }
+    };
+
+    // Function to handle dynamic button creation
+    function createDynamicButton(subnetType, subnetValue) {
+        var button = document.createElement('button');
+        button.textContent = subnetType;
+        button.className = 'subnet-button'; // Apply the subnet button style
+
+        // Add a listener to the dynamically created button
+        button.addEventListener('click', function () {
+            // Send subnet type to the server when the button is clicked
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(subnetValue);
+
+                // Check if the button clicked was 'Yes' to refresh the page
+                if (subnetValue.toLowerCase() === 'yes') {
+                    location.reload();  // Reload the webpage
+                }
+            }
+
+            // Remove both buttons once clicked
+            document.getElementById('dynamicButtonsContainer').innerHTML = '';
+        });
+
+        // Append the button to the container
+        document.getElementById('dynamicButtonsContainer').appendChild(button);
+    }
+</script>
+
+<!-- Your existing HTML code here -->
+
+
+</body>
+
+</html>
